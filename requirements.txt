@@ -1,0 +1,7 @@
+flet
+TikTokLive
+threading
+pyttsx3
+gtts
+pygame
+multiprocessing

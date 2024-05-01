@@ -27,7 +27,7 @@ def get_available_voices():
 
 def hablar(mensaje,lang1):
     # Usar libreria gTTS
-    volume = 0.7
+    volume = 1
     tts = gTTS(mensaje, lang="es" if lang1 is None else lang1, slow=False)
     ran = random.randint(0,9999)
     filename = 'Temp' + format(ran) + '.mp3'
@@ -50,16 +50,20 @@ print(LANGUAGES)
 def main(page):
     title = ft.Text("Available Text-to-Speech Voices")
     uniqueId = page.client_storage.get("uniqueId")
+    page.window_bgcolor = ft.colors.TRANSPARENT
+    page.bgcolor = ft.colors.with_opacity(0, ft.colors.GREY_100)
+    #page.window_opacity = 0.9
+    page.window_always_on_top = True
     # Fetch voice data from the function
     voice_names = get_available_voices()
     def dropdown_changed(e):
-        texto.value = f"Dropdown changed to {voice_dropdown.value}"
+        texto.value = f"Dropdown cambiado a {voice_dropdown.value}"
         hablar(voice_dropdown.value,voice_dropdown.value)
         page.update()
     
     # Create dropdown options from the voice names
     voice_dropdown = ft.Dropdown(on_change=dropdown_changed,width=300)  # Initialize dropdown
-    ft.dropdown.Option(key=uniqueId,text=uniqueId)
+
     for lang in LANGUAGES:
         option = ft.dropdown.Option(key=lang, text=lang)
         voice_dropdown.options.append(option)  # Add option to dropdown
@@ -160,6 +164,6 @@ def main(page):
 
 if __name__ == '__main__':
     mp.set_start_method('spawn')
-    app_process = mp.Process(target=ft.app, kwargs={'target': main, 'view': ft.WEB_BROWSER, 'port': 8000})
+    app_process = mp.Process(target=ft.app, kwargs={'target': main, 'view': ft.AppView.FLET_APP, 'port': 8000})
     app_process.start()
     app_process.join()
