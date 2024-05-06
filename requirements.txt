@@ -1,7 +1,4 @@
-flet
-TikTokLive
-threading
-pyttsx3
-gtts
-pygame
-multiprocessing
+TikTokLive==6.0.5
+pyttsx3==2.90
+gtts==2.5.1
+pygame==2.5.2

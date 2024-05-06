@@ -9,6 +9,7 @@ from pygame import mixer
 import random
 import os, tempfile, gtts, subprocess, gtts
 import time
+import asyncio
 # Create the TikTokLive client instance
 client: TikTokLiveClient = None
 
@@ -47,16 +48,17 @@ def hablar(mensaje,lang1):
 print("Idiomas soportados por gTTS:")
 LANGUAGES = [language for language in gtts.lang.tts_langs()]
 print(LANGUAGES)
-def main(page):
+async def main(page: ft.Page):
     title = ft.Text("Available Text-to-Speech Voices")
-    uniqueId = page.client_storage.get("uniqueId")
-    page.window_bgcolor = ft.colors.TRANSPARENT
-    page.bgcolor = ft.colors.with_opacity(0, ft.colors.GREY_100)
+    page.window_bgcolor = ft.colors.GREY_400
+    page.bgcolor = ft.colors.GREY_400
+
+    # page.bgcolor = ft.colors.with_opacity(1, ft.colors.GREY_100)
     #page.window_opacity = 0.9
     page.window_always_on_top = True
     # Fetch voice data from the function
     voice_names = get_available_voices()
-    def dropdown_changed(e):
+    async def dropdown_changed(e):
         texto.value = f"Dropdown cambiado a {voice_dropdown.value}"
         hablar(voice_dropdown.value,voice_dropdown.value)
         page.update()
@@ -74,8 +76,9 @@ def main(page):
     page.add(voice_dropdown)
     texto = ft.Text("TiktokLive")
     chat = ft.Column(scroll="auto", height=400)  # Se agrega scroll al chat
+    uniqueId = uniqueIdStore(page)
     unique_id_input = ft.TextField(label="Escribe UniqueId" ,value=uniqueId)
-
+    await asyncio.sleep(3)
     def on_connect(event: ConnectEvent):
         print(f"Connected to @{event.unique_id} (Room ID: {client.room_id})")
     
@@ -124,7 +127,7 @@ def main(page):
     campo_mensaje = ft.TextField(label="Escribe un mensaje", on_submit=enviar_mensaje)
     botao_enviar_mensaje = ft.ElevatedButton("Enviar", on_click=enviar_mensaje)
 
-    def entrar_popup(evento):
+    async def entrar_popup(evento):
         page.pubsub.send_all({"usuario": unique_id_input.value, "tipo": "entrada"})
         # Añadir el chat
         page.add(chat)
@@ -161,9 +164,18 @@ def main(page):
     page.add(texto)
     page.add(botao_iniciar)
     page.add(unique_id_input)
+def uniqueIdStore(page: ft.Page):
+    try:
+        uniqueId = page.client_storage.get("uniqueId") or None
+        return uniqueId
+    except TimeoutError:
+        uniqueId = "coloque usuario"
+        print("Error al acceder al almacenamiento del cliente")
+        return uniqueId
+# ft.app(main)
+def run_UI():
+    ft.app(target=main, assets_dir="static")
 
-if __name__ == '__main__':
-    mp.set_start_method('spawn')
-    app_process = mp.Process(target=ft.app, kwargs={'target': main, 'view': ft.AppView.FLET_APP, 'port': 8000})
-    app_process.start()
-    app_process.join()
+if __name__ == "__main__":
+    run_UI()
+#ft.app(target=main, view=ft.AppView.FLET_APP, port=8000)
